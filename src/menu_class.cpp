@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <string>
 #include "../headers/menu_class.h"
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 using std::string;
 using std::cout;
@@ -31,9 +33,40 @@ Menu::Menu(std::string points[], unsigned count_point)
 
 void Menu::show() const // Функция для отображения всех пунктов и их номеров
 {
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);  
+    // printf("This terminal window is %d rows by %d columns\n", w.ws_row, w.ws_col);  
+
+	for (unsigned i {}; i < (w.ws_row / 3); i++)
+	{
+		cout << endl;
+	}
+
 	for (unsigned i {}; this -> points[i] != "Null"; i++)
 	{
-		cout << (i + 1) << ". " << points[i] << endl;
+		static unsigned color {31};
+
+		if (color > 37)
+		{
+			color = 31;
+		} else
+		{
+			color++;
+		}
+
+		for (unsigned i {}; i < (w.ws_col / 35); i++)
+		{
+			cout << " ";
+		}
+
+		// Для изменения цветов текста
+		cout << "\033[1;" << color << "m" << (i + 1) << "\033[0m" << ". " << points[i] << endl;
+		
+	}
+
+	for (unsigned i {}; i < (w.ws_row / 3); i++)
+	{
+		cout << endl;
 	}
 }
 
