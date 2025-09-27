@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include "../headers/menu_class.h"
 
 using std::string;
 using std::cout;
@@ -70,17 +71,17 @@ class Menu
 		};
 };
 
-void test_hello(Menu &object)
-{
-	cout << "Hello" << endl;
-};
+// void test_hello(Menu &object)
+// {
+// 	cout << "Hello" << endl;
+// };
 
-int main()
-{
-	string point[8] {"Привет", "как дела", "зачем"};
-	Menu test_menu {point, 3};
-	test_menu.functions[0] = reinterpret_cast<void*>(test_hello);
+// int main()
+// {
+// 	string point[8] {"Привет", "как дела", "зачем"};
+// 	Menu test_menu {point, 3};
+// 	test_menu.functions[0] = reinterpret_cast<void*>(test_hello);
 
-	test_menu.show();
-	test_menu.select_point();
-}
+// 	test_menu.show();
+// 	test_menu.select_point();
+// }
