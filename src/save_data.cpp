@@ -48,8 +48,6 @@ class Time
 
         double fewMinutes; // сколько прошло минут на выполнение задачи
     public:
-        friend int main();
-
         Time()
         {
             
