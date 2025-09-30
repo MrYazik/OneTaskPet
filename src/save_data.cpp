@@ -34,8 +34,9 @@ using std::endl;
 //         std::string
 // };
 
-// класс для хранения времени (например, для отслеживания времени начала и конца)
-class Time
+// класс для хранения информации о задачи (тотальное время её выполнения,
+// имя события, на какую дату оно назначенно
+class Task
 {
     private:
         // хранение времени (например, 20 или 18) начала и следующей датой конец
@@ -46,11 +47,18 @@ class Time
         unsigned start_end_seconds[2];
         unsigned all_time_work_minutes;
 
-        double fewMinutes; // сколько прошло минут на выполнение задачи
+        double totalTime; // сколько времени (в минутах) прошло на выполнение
+        std::string name_task;
+        unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
     public:
-        Time()
+
+        Task(std::string name_task = "None name", unsigned day_task = 0, unsigned month_task = 12, unsigned year_task_YYYY = 0)
         {
-            
+            // присваиваиваем знаения полям
+            this -> name_task = name_task;
+            this -> day_task = day_task;
+            this -> month_task = month_task;
+            this -> year_task_YYYY = year_task_YYYY;
         }
         void startTime()
         {
@@ -74,33 +82,47 @@ class Time
             start_end_month[1] = local_time -> tm_mon;
             start_end_day[1] = local_time -> tm_mday;
             start_end_hour[1] = local_time -> tm_hour;
-            start_end_minute[1] = local_time -> tm_min + 21;
+            start_end_minute[1] = local_time -> tm_min;
             start_end_seconds[1] = local_time -> tm_sec;
 
             unsigned fewMonth = start_end_month[1] - start_end_month[0];
             unsigned fewDay = start_end_day[1] - start_end_day[0];
             unsigned fewHour = start_end_hour[1] - start_end_hour[0];
             unsigned fewMinutes = start_end_minute[1] - start_end_minute[0];
-            double fewSeconds = start_end_seconds[1] - start_end_seconds[0];
+            unsigned fewSeconds = start_end_seconds[1] - start_end_seconds[0];
 
             // добавляем тотальное время
-            this -> fewMinutes += (fewSeconds / 60); // добавляем секунды
-            this -> fewMinutes += fewMinutes; // добавляем минуты
-            this -> fewMinutes += (fewHour * 60); // добаввляем часы
-            this -> fewMinutes += (fewDay * 1440); // добавляем дни 
-            this -> fewMinutes += (fewMonth * 43200); // добавляем месяца
+            this -> totalTime += (fewSeconds / 60); // добавляем секунды
+            this -> totalTime += fewMinutes; // добавляем минуты
+            this -> totalTime += (fewHour * 60); // добаввляем часы
+            this -> totalTime += (fewDay * 1440); // добавляем дни 
+            this -> totalTime += (fewMonth * 43200); // добавляем месяца
 
-            cout << "Всего прошло минут: " << this -> fewMinutes << endl;
+            cout << "Всего прошло минут: " << this -> totalTime << endl;
         }
 
+        // Функция для добавления N дней к дате назначения заметки (на какой день она заплонированна)
+        void changeDateToNNext()
+        {
+            // сделать
+        }
+
+        void printInfoTask()
+        {
+            cout << "👤\tИмя задачи: " << name_task << endl;
+            cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << year_task_YYYY << endl;
+            cout << "✅\tВы уже выполняете эту задачу: " << totalTime << " минут" << endl;
+        }
 };
 
 int main()
 {
-    Time test_task;
+    Task test_task("Тестовое", 1, 10, 2025);
     std::string test {};
 
     test_task.startTime();
     std::cin >> test;
     test_task.endTime();
+
+    test_task.printInfoTask();
 }
