@@ -6,34 +6,6 @@
 using std::cout;
 using std::endl;
 
-// // Класс для сохранения даты создания какого-то события, имя события. 
-// class Date
-// {
-//     private:
-//         std::string
-//     public:
-//         // день
-//         unsigned getDateDay()
-//         {
-
-//         }
-
-//         // месяц
-//         unsigned getDateMonth()
-//         {
-
-
-//         }
-
-//         // год
-//         unsigned getDateYear()
-//         {
-            
-//         }
-
-//         std::string
-// };
-
 // класс для хранения информации о задачи (тотальное время её выполнения,
 // имя события, на какую дату оно назначенно
 class Task
@@ -47,7 +19,7 @@ class Task
         unsigned start_end_seconds[2];
         unsigned all_time_work_minutes;
 
-        double totalTime; // сколько времени (в минутах) прошло на выполнение
+        unsigned totalTime; // сколько времени (в минутах) прошло на выполнение
         std::string name_task;
         unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
     public:
@@ -121,7 +93,7 @@ int main()
     std::string test {};
 
     test_task.startTime();
-    std::cin >> test;
+    std::getline(std::cin, test);
     test_task.endTime();
 
     test_task.printInfoTask();
