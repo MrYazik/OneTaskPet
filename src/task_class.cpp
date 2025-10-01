@@ -2,6 +2,9 @@
 #include <fstream>
 #include <string>
 #include <ctime>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 using std::cout;
 using std::endl;
@@ -23,8 +26,12 @@ class Task
         unsigned totalTime; // сколько времени (в минутах) прошло на выполнение
         std::string name_task;
         unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
-    public:
 
+        std::atomic<unsigned> workSeconds {};
+        std::atomic<unsigned> workMinutes {};
+
+        std::atomic<bool> pause_work {false};
+    public:
         Task(std::string name_task = "None name", unsigned day_task = 0, unsigned month_task = 12, unsigned year_task_YYYY = 0)
         {
             // присваиваиваем знаения полям
@@ -33,45 +40,53 @@ class Task
             this -> month_task = month_task;
             this -> year_task_YYYY = year_task_YYYY;
         }
+
+        static int time(Task* object)
+        {
+            while(true)
+            {
+                // Вывод информации о текущей сессии
+                system("clear");
+                cout << "Имя задачи: " << object->name_task << endl;
+                cout << "Вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
+                cout << endl;
+                cout << "Нажмите Enter чтоб приостановить" << endl;
+
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                // остановка работы
+                if (object->pause_work == true)
+                {
+                    return 0;
+                    object->endTime();
+                }
+
+                if (object->workSeconds >= 59)
+                {
+                    object -> workMinutes.fetch_add(1);
+                    object -> workSeconds.exchange(0);
+                } else
+                {
+                    object -> workSeconds.fetch_add(1);
+                }
+            }
+
+            return 0;
+        }
+
         void startTime()
         {
-            // Засекаем начальное время
-            std::time_t current_time = std::time(nullptr);
-            std::tm* local_time = std::localtime(&current_time);
+            std::thread time_th (time, this);
+            time_th.detach();
+            std::string noneText {"test"};
 
-            start_end_month[0] = local_time -> tm_mon;
-            start_end_day[0] = local_time -> tm_mday;
-            start_end_hour[0] = local_time -> tm_hour;
-            start_end_minute[0] = local_time -> tm_min;
-            start_end_seconds[0] = local_time -> tm_sec;
-
+            std::getline(std::cin, noneText); // ожидаем пока пользователь нажмёт Enter
+            pause_work = true;
         }
         void endTime()
         {
-            // Засекаем конец времени и добавляем его к общему времени на выполнение задачи
-            std::time_t current_time = std::time(nullptr);
-            std::tm* local_time = std::localtime(&current_time);
-
-            start_end_month[1] = local_time -> tm_mon;
-            start_end_day[1] = local_time -> tm_mday;
-            start_end_hour[1] = local_time -> tm_hour;
-            start_end_minute[1] = local_time -> tm_min;
-            start_end_seconds[1] = local_time -> tm_sec;
-
-            unsigned fewMonth = start_end_month[1] - start_end_month[0];
-            unsigned fewDay = start_end_day[1] - start_end_day[0];
-            unsigned fewHour = start_end_hour[1] - start_end_hour[0];
-            unsigned fewMinutes = start_end_minute[1] - start_end_minute[0];
-            unsigned fewSeconds = start_end_seconds[1] - start_end_seconds[0];
-
-            // добавляем тотальное время
-            this -> totalTime += (fewSeconds / 60); // добавляем секунды
-            this -> totalTime += fewMinutes; // добавляем минуты
-            this -> totalTime += (fewHour * 60); // добаввляем часы
-            this -> totalTime += (fewDay * 1440); // добавляем дни 
-            this -> totalTime += (fewMonth * 43200); // добавляем месяца
-
-            cout << "Всего прошло минут: " << this -> totalTime << endl;
+            pause_work = false;
+            cout << "Работа таймера приостановленна" << endl;
         }
 
         // Функция для добавления N дней к дате назначения заметки (на какой день она заплонированна)
@@ -84,7 +99,7 @@ class Task
         {
             cout << "👤\tИмя задачи: " << name_task << endl;
             cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << year_task_YYYY << endl;
-            cout << "✅\tВы уже выполняете эту задачу: " << totalTime << " минут" << endl;
+            cout << "✅\tВы уже выполняете эту задачу: " << workMinutes << " минут " << workSeconds << " секунд " << endl;
         }
 };
 
@@ -95,7 +110,6 @@ int main()
 
     test_task.startTime();
     std::getline(std::cin, test);
-    test_task.endTime();
 
     test_task.printInfoTask();
 }
