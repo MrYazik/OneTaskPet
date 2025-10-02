@@ -6,6 +6,8 @@
 #include <atomic>
 #include <chrono>
 
+#include "../headers/menu_class.h"
+
 using std::cout;
 using std::endl;
 
@@ -25,21 +27,53 @@ class Task
 
         unsigned totalTime; // сколько времени (в минутах) прошло на выполнение
         std::string name_task;
+        bool isDone {false}; // выполненна задача или нет
+
         unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
 
         std::atomic<unsigned> workSeconds {};
         std::atomic<unsigned> workMinutes {};
 
+        std::atomic<unsigned> pausedSeconds {};
+        std::atomic<unsigned> pausedMinutes {};
+
+        // Bool
+        std::atomic<bool> stop_work {false};
         std::atomic<bool> pause_work {false};
-    public:
-        Task(std::string name_task = "None name", unsigned day_task = 0, unsigned month_task = 12, unsigned year_task_YYYY = 0)
+
+        // Функции
+
+        // Постановка на паузу таймера
+        void pause_work_func()
         {
-            // присваиваиваем знаения полям
-            this -> name_task = name_task;
-            this -> day_task = day_task;
-            this -> month_task = month_task;
-            this -> year_task_YYYY = year_task_YYYY;
+            pause_work.exchange(true); // меняем значение на true
         }
+        void unpause_work_func()
+        {
+            pause_work.exchange(false); // меняем значение на false
+        }
+        void work_isdone()
+        {
+            isDone = true;
+        }
+
+
+        // Меню для работающего таймера
+        const static unsigned count_point_pause_and_stop_menu {3};
+        std::string pause_and_stop_menu_point[count_point_pause_and_stop_menu] {
+            "\tПоставить на паузу выполнение",
+            "\tВыйти из задачи и завершить задачу",
+            "\tВыйти из задачи и не завершать задачу"
+        };
+        Menu pause_and_stop_menu_timer {pause_and_stop_menu_point, count_point_pause_and_stop_menu};
+
+        // Меню для таймера в паузе
+        const static unsigned count_pause_menu_point {2};
+        std::string pause_points[count_pause_menu_point] {
+            "\tПродолжить выполнение задачи",
+            "\tПометить задачу как выполненную"
+        };
+        Menu pause_timer {pause_points, count_pause_menu_point};
 
         static int time(Task* object)
         {
@@ -47,18 +81,39 @@ class Task
             {
                 // Вывод информации о текущей сессии
                 system("clear");
-                cout << "Имя задачи: " << object->name_task << endl;
-                cout << "Вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
-                cout << endl;
-                cout << "Нажмите Enter чтоб приостановить" << endl;
+                cout << "\tИмя задачи: " << object->name_task << endl;
+                cout << "\tВы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
+                
+                // object -> pause_timer.show();
 
+                // Прибавление к переменной 1 каждую секунду
                 std::this_thread::sleep_for(std::chrono::seconds(1));
 
                 // остановка работы
-                if (object->pause_work == true)
+                if (object->stop_work == true)
                 {
                     return 0;
                     object->endTime();
+                }
+
+                // если науступила пауза
+                while (object -> pause_work == true)
+                {
+                    system("clear");
+                    cout << "Вы на паузе уже: " << object->pausedMinutes << " минут " << object->pausedSeconds << " секунд" << endl;
+                    
+                    //object -> pause_timer.show();
+
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                    if (object->workSeconds >= 59)
+                    {
+                        object -> pausedMinutes.fetch_add(1);
+                        object -> pausedSeconds.exchange(0);
+                    } else
+                    {
+                        object -> pausedSeconds.fetch_add(1);
+                    }
                 }
 
                 if (object->workSeconds >= 59)
@@ -73,6 +128,15 @@ class Task
 
             return 0;
         }
+    public:
+        Task(std::string name_task = "None name", unsigned day_task = 0, unsigned month_task = 12, unsigned year_task_YYYY = 0)
+        {
+            // присваиваиваем знаения полям
+            this -> name_task = name_task;
+            this -> day_task = day_task;
+            this -> month_task = month_task;
+            this -> year_task_YYYY = year_task_YYYY;
+        }
 
         void startTime()
         {
@@ -81,11 +145,11 @@ class Task
             std::string noneText {"test"};
 
             std::getline(std::cin, noneText); // ожидаем пока пользователь нажмёт Enter
-            pause_work = true;
+            stop_work = true;
         }
         void endTime()
         {
-            pause_work = false;
+            stop_work = false;
             cout << "Работа таймера приостановленна" << endl;
         }
 
