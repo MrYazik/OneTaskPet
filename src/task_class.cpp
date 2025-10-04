@@ -13,7 +13,6 @@ using std::endl;
 
 // класс для хранения информации о задаче (тотальное время её выполнения,
 // имя события, на какую дату оно назначенно)
-
 class Task
 {
     private:
@@ -57,23 +56,20 @@ class Task
             isDone = true;
         }
 
-
         // Меню для работающего таймера
-        const static unsigned count_point_pause_and_stop_menu {3};
-        std::string pause_and_stop_menu_point[count_point_pause_and_stop_menu] {
+        std::string pause_and_stop_menu_point[3] {
             "\tПоставить на паузу выполнение",
             "\tВыйти из задачи и завершить задачу",
             "\tВыйти из задачи и не завершать задачу"
         };
-        Menu pause_and_stop_menu_timer {pause_and_stop_menu_point, count_point_pause_and_stop_menu};
+        Menu pause_and_stop_menu_timer {pause_and_stop_menu_point, static_cast<unsigned>(std::size(pause_and_stop_menu_point))};
 
         // Меню для таймера в паузе
-        const static unsigned count_pause_menu_point {2};
-        std::string pause_points[count_pause_menu_point] {
+        std::string pause_points[2] {
             "\tПродолжить выполнение задачи",
             "\tПометить задачу как выполненную"
         };
-        Menu pause_timer {pause_points, count_pause_menu_point};
+        Menu pause_timer {pause_points, static_cast<unsigned>(std::size(pause_points))};
 
         static int time(Task* object)
         {
@@ -81,10 +77,10 @@ class Task
             {
                 // Вывод информации о текущей сессии
                 system("clear");
-                cout << "\tИмя задачи: " << object->name_task << endl;
-                cout << "\tВы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
+                cout << "Имя задачи: " << object->name_task << endl;
+                cout << "Вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
                 
-                // object -> pause_timer.show();
+                object->pause_and_stop_menu_timer.show();
 
                 // Прибавление к переменной 1 каждую секунду
                 std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -102,11 +98,11 @@ class Task
                     system("clear");
                     cout << "Вы на паузе уже: " << object->pausedMinutes << " минут " << object->pausedSeconds << " секунд" << endl;
                     
-                    //object -> pause_timer.show();
+                    object -> pause_timer.show();
 
                     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-                    if (object->workSeconds >= 59)
+                    if (object-> pausedSeconds >= 59)
                     {
                         object -> pausedMinutes.fetch_add(1);
                         object -> pausedSeconds.exchange(0);
@@ -140,12 +136,31 @@ class Task
 
         void startTime()
         {
-            std::thread time_th (time, this);
-            time_th.detach();
-            std::string noneText {"test"};
+            std::string select_point {};
+            bool stop_request_input {false};
 
-            std::getline(std::cin, noneText); // ожидаем пока пользователь нажмёт Enter
-            stop_work = true;
+            std::thread time_th (time, this);
+            time_th.detach(); // Запускем таймер
+
+            while (stop_request_input == false)
+            {
+                // Выбор пункта
+                std::getline(std::cin, select_point);
+
+                if (select_point == "1") {
+                    pause_work_func();
+                    stop_request_input = true;
+                }
+                else if (select_point == "2")
+                    work_isdone();
+                else if (select_point == "3")
+                    unpause_work_func();
+                else {
+                    cout << "Вы ввели неверный пункт меню." << endl;
+                }
+            }
+
+            stop_request_input = false;
         }
         void endTime()
         {
