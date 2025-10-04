@@ -35,18 +35,12 @@ void Menu::show() const // Функция для отображения всех
 {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);  
-    // printf("This terminal window is %d rows by %d columns\n", w.ws_row, w.ws_col);  
-
-	for (unsigned i {}; i < (w.ws_row / 3); i++)
-	{
-		cout << endl;
-	}
+	unsigned color {31};
+	cout << endl;
 
 	for (unsigned i {}; this -> points[i] != "Null"; i++)
 	{
-		static unsigned color {31};
-
-		if (color > 37)
+		if (color >= 37)
 		{
 			color = 31;
 		} else
@@ -54,6 +48,7 @@ void Menu::show() const // Функция для отображения всех
 			color++;
 		}
 
+		// Делаем отступы от левого края меню
 		for (unsigned i {}; i < (w.ws_col / 35); i++)
 		{
 			cout << " ";
@@ -61,9 +56,13 @@ void Menu::show() const // Функция для отображения всех
 
 		// Для изменения цветов текста
 		cout << "\033[1;" << color << "m" << (i + 1) << "\033[0m" << ". " << points[i] << endl;
-		
+	
 	}
 
+	// Сбрасываем счётчик цветов для пунктов меню
+	color = 31;
+
+	// Отступ от низа меню
 	for (unsigned i {}; i < (w.ws_row / 3); i++)
 	{
 		cout << endl;
