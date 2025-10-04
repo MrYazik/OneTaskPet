@@ -16,22 +16,15 @@ using std::endl;
 class Task
 {
     private:
-        // хранение времени (например, 20 или 18) начала и следующей датой конец
-        unsigned start_end_month[2];
-        unsigned start_end_day[2];
-        unsigned start_end_hour[2];
-        unsigned start_end_minute[2];
-        unsigned start_end_seconds[2];
-        unsigned all_time_work_minutes;
-
-        unsigned totalTime; // сколько времени (в минутах) прошло на выполнение
-        std::string name_task;
+        std::string name_task; // имя задачи
         bool isDone {false}; // выполненна задача или нет
-
         unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
 
         std::atomic<unsigned> workSeconds {};
         std::atomic<unsigned> workMinutes {};
+
+        std::atomic<unsigned> totalPausedSeconds {};
+        std::atomic<unsigned> totalPausedMinutes {};
 
         std::atomic<unsigned> pausedSeconds {};
         std::atomic<unsigned> pausedMinutes {};
@@ -96,6 +89,7 @@ class Task
                 while (object -> pause_work == true)
                 {
                     system("clear");
+                    cout << "Суммарно вы на паузе уже: " << object->totalPausedMinutes << " минут " << object->totalPausedSeconds << " секунд" << endl;
                     cout << "Вы на паузе уже: " << object->pausedMinutes << " минут " << object->pausedSeconds << " секунд" << endl;
                     
                     object -> pause_timer.show();
@@ -104,10 +98,19 @@ class Task
 
                     if (object-> pausedSeconds >= 59)
                     {
+                        // Глобальное время паузы
+                        object -> totalPausedMinutes.fetch_add(1);
+                        object -> totalPausedSeconds.exchange(0);
+
+                        // Локальное время на текущей сесии паузы
                         object -> pausedMinutes.fetch_add(1);
                         object -> pausedSeconds.exchange(0);
                     } else
                     {
+                        // Глобальное время паузы
+                        object -> totalPausedSeconds.fetch_add(1);
+
+                        // Локальное время на текущей сесии паузы
                         object -> pausedSeconds.fetch_add(1);
                     }
                 }
@@ -142,25 +145,54 @@ class Task
             std::thread time_th (time, this);
             time_th.detach(); // Запускем таймер
 
-            while (stop_request_input == false)
+            // Выбор функции в менюшках
+            while (true)
             {
-                // Выбор пункта
-                std::getline(std::cin, select_point);
+                while (stop_request_input == false)
+                {
+                    // Выбор пункта
+                    std::getline(std::cin, select_point);
 
-                if (select_point == "1") {
-                    pause_work_func();
-                    stop_request_input = true;
+                    if (select_point == "1") {
+                        pause_work_func();
+                        stop_request_input = true;
+                    }
+                    else if (select_point == "2") {
+                        work_isdone();
+                        stop_request_input = true;
+                    }
+                    else if (select_point == "3") {
+                        unpause_work_func();
+                        stop_request_input = true;
+                    }
+                    else {
+                        cout << "Вы ввели неверный пункт меню." << endl;
+                    }
                 }
-                else if (select_point == "2")
-                    work_isdone();
-                else if (select_point == "3")
-                    unpause_work_func();
-                else {
-                    cout << "Вы ввели неверный пункт меню." << endl;
+
+                stop_request_input = false;
+
+                // Выбор функции в меню паузы
+                while (pause_work == true)
+                {
+                    // Выбор пункта
+                    std::getline(std::cin, select_point);
+
+                    if (select_point == "1")
+                    {
+                        unpause_work_func();
+                    } else if (select_point == "2")
+                    {
+                        work_isdone();
+                    } else
+                    {
+                        cout << "Вы ввели неправильный пункт меню." << endl;
+                    }
                 }
+
+                pause_work.exchange(false);
+
             }
-
-            stop_request_input = false;
         }
         void endTime()
         {
