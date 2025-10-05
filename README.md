@@ -9,66 +9,66 @@ OneTaskPet — это программа, которая помогает сос
 
 # Главы
 
-- [Использование](#Использование)
-- [Установка](#Установка)
-- [Обновление](#Обновление)
-- [Деинсталяция](#Деинсталяция)
-- [Планы по разработке](#Планы-по-разработке)
+- [Использование](#использование)
+- [Установка](#установка)
+- [Обновление](#обновление)
+- [Деинсталяция](#деинсталяция)
+- [Планы по разработке](#планы-по-разработке)
 - [License](#license)
 
 # Использование
 
 [(Back to top)](#Главы)
 
-Man pages have been added. Checkout `man colorls`.
+Чтоб использовать, пройдите пункт [Установка](#установка)
 
 # Установка
 
 [(Back to top)](#Главы)
 
-1. Install Ruby (preferably, version >= 2.6)
-2. [Download](https://www.nerdfonts.com/font-downloads) and install a Nerd Font. Have a look at the [Nerd Font README](https://github.com/ryanoasis/nerd-fonts/blob/master/readme.md) for installation instructions.
+Для Debian/Ubuntu основанных на GNU/Linux:
 
-    *Note for `iTerm2` users - Please enable the Nerd Font at iTerm2 > Preferences > Profiles > Text > Non-ASCII font > Hack Regular Nerd Font Complete.*
-
-    *Note for `HyperJS` users - Please add `"Hack Nerd Font"` Font as an option to `fontFamily` in your `~/.hyper.js` file.*
-
-3. Install the [colorls](https://rubygems.org/gems/colorls/) ruby gem with `gem install colorls`
-
-    *Note for `rbenv` users - In case of load error when using `lc`, please try the below patch.*
-
-    ```sh
-    rbenv rehash
-    rehash
-    ```
-
-4. Enable tab completion for flags by entering following line to your shell configuration file (`~/.bashrc` or `~/.zshrc`) :
-    ```bash
-    source $(dirname $(gem which colorls))/tab_complete.sh
-    ```
-
-5. Start using `colorls` :tada:
-
-6. Have a look at [Recommended configurations](#recommended-configurations) and [Custom configurations](#custom-configurations).
+1. Сначала нужно установить gcc
 
 # Обновление
 
 [(Back to top)](#Главы)
 
-Want to update to the latest version of `colorls`?
+Если вы хотите обновить код (чтоб получить новые функции), на данный момент просто введите команду для получения всех изменения текущего репозитория и скомпилируйте код: 
 
 ```sh
-gem update colorls
+# Действия до:
+
+git clone https://github.com/MrYazik/OneTaskPet.git
+cd OneTaskPet
+
+# Чтоб обновить, если есть изменения
+git pull
+
+# Компилируем программу заного (например, с помощью компилятора g++)
+g++ main.cpp src/menu_class.cpp src/task_class.cpp -o onetaskpet.out
+
+# Запускаем
+chmod +x onetaskpet.out # Даём разрешение на выполнение
+./onetaskpet.out # Запускаем
 ```
 
 # Деинсталяция
 
 [(Back to top)](#Главы)
 
-Want to uninstall and revert back to the old style? No issues (sob). Please feel free to open an issue regarding how we can enhance `colorls`.
+Чтоб удалить программу на даный момент нужно просто удалить папку в которую в скопировали репозиторий, например:
 
 ```sh
-gem uninstall colorls
+# Действия до:
+
+git clone https://github.com/MrYazik/OneTaskPet.git
+cd OneTaskPet
+
+# Что нужно сделать чтоб удалить репозиторий:
+
+cd ../ # Переходим в предыдущию директорию
+rm -rf OneTaskPet # Удаляем папку с кодом проекта
 ```
 
 # Планы по разработке
@@ -83,7 +83,7 @@ gem uninstall colorls
 
 # License
 
-[(Back to top)](#Главы)
+[(Back to top)](#главы)
 
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
