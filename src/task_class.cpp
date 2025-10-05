@@ -20,8 +20,14 @@ class Task
         bool isDone {false}; // выполненна задача или нет
         unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
 
+        std::atomic<unsigned> totalWorkSeconds {};
+        std::atomic<unsigned> totalWorkMinutes {};
+
         std::atomic<unsigned> workSeconds {};
         std::atomic<unsigned> workMinutes {};
+
+        bool stopWorkNotDown {false};
+        bool stopWork {false}; // Завершение выполнение функций класса
 
         std::atomic<unsigned> totalPausedSeconds {};
         std::atomic<unsigned> totalPausedMinutes {};
@@ -30,7 +36,6 @@ class Task
         std::atomic<unsigned> pausedMinutes {};
 
         // Bool
-        std::atomic<bool> stop_work {false};
         std::atomic<bool> pause_work {false};
 
         // Функции
@@ -44,16 +49,25 @@ class Task
         {
             pause_work.exchange(false); // меняем значение на false
         }
+        // Выход с отмечением задачи как выполненной
         void work_isdone()
         {
             isDone = true;
+            stopWork = true;
         }
 
+        // Выход из задачи, не отмечая, что её выполнил
+        void exit_work_not_down()
+        {
+            stopWorkNotDown = true;
+        };
+
         // Меню для работающего таймера
-        std::string pause_and_stop_menu_point[3] {
+        std::string pause_and_stop_menu_point[4] {
             "\tПоставить на паузу выполнение",
             "\tВыйти из задачи и завершить задачу",
-            "\tВыйти из задачи и не завершать задачу"
+            "\tВыйти из задачи и не завершать задачу",
+            "\tРаботать в качестве таймера Pomodoro"
         };
         Menu pause_and_stop_menu_timer {pause_and_stop_menu_point, static_cast<unsigned>(std::size(pause_and_stop_menu_point))};
 
@@ -71,26 +85,20 @@ class Task
                 // Вывод информации о текущей сессии
                 system("clear");
                 cout << "Имя задачи: " << object->name_task << endl;
-                cout << "Вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
-                
+                cout << "В текущей сессии вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
+                cout << "Сумарно вы работаете уже: " << object -> totalWorkMinutes << " минут " << object -> totalWorkSeconds << " секунд " << endl;
+
                 object->pause_and_stop_menu_timer.show();
 
                 // Прибавление к переменной 1 каждую секунду
                 std::this_thread::sleep_for(std::chrono::seconds(1));
 
-                // остановка работы
-                if (object->stop_work == true)
-                {
-                    return 0;
-                    object->endTime();
-                }
-
                 // если науступила пауза
                 while (object -> pause_work == true)
                 {
                     system("clear");
+                    cout << "На текущей паузе вы уже: " << object->pausedMinutes << " минут " << object->pausedSeconds << " секунд" << endl;
                     cout << "Суммарно вы на паузе уже: " << object->totalPausedMinutes << " минут " << object->totalPausedSeconds << " секунд" << endl;
-                    cout << "Вы на паузе уже: " << object->pausedMinutes << " минут " << object->pausedSeconds << " секунд" << endl;
                     
                     object -> pause_timer.show();
 
@@ -113,15 +121,40 @@ class Task
                         // Локальное время на текущей сесии паузы
                         object -> pausedSeconds.fetch_add(1);
                     }
+
+                    // Обнуляем локальный таймер таймера работы 
+                    object -> workMinutes.exchange(0);
+                    object -> workSeconds.exchange(0);
                 }
+
+                // Обнуление локального таймера паузы
+                object -> pausedMinutes.exchange(0);
+                object -> pausedSeconds.exchange(0);
 
                 if (object->workSeconds >= 59)
                 {
+                    object -> totalWorkMinutes.fetch_add(1);
+                    object -> totalWorkSeconds.exchange(0);
+
                     object -> workMinutes.fetch_add(1);
                     object -> workSeconds.exchange(0);
                 } else
                 {
+                    object -> totalWorkSeconds.fetch_add(1);
+
                     object -> workSeconds.fetch_add(1);
+                }
+
+                // Если пользователь завершил работу с отмеченным выполненным 
+                if (object -> isDone == true)
+                {
+                    return 0;
+                }
+
+                // Если пользователь завершил работу без отмечения выполненным
+                if (object -> stopWorkNotDown == true)
+                {
+                    return 0;
                 }
             }
 
@@ -146,24 +179,24 @@ class Task
             time_th.detach(); // Запускем таймер
 
             // Выбор функции в менюшках
-            while (true)
+            while (stopWork == false)
             {
-                while (stop_request_input == false)
+                while (stop_request_input == false && stopWork == false)
                 {
                     // Выбор пункта
                     std::getline(std::cin, select_point);
 
                     if (select_point == "1") {
                         pause_work_func();
-                        stop_request_input = true;
+                        stop_request_input = true; // Выход из текузей менюшки
                     }
                     else if (select_point == "2") {
                         work_isdone();
-                        stop_request_input = true;
+                        stopWork = true;
                     }
                     else if (select_point == "3") {
-                        unpause_work_func();
-                        stop_request_input = true;
+                        exit_work_not_down();
+                        stopWork = true;
                     }
                     else {
                         cout << "Вы ввели неверный пункт меню." << endl;
@@ -173,7 +206,7 @@ class Task
                 stop_request_input = false;
 
                 // Выбор функции в меню паузы
-                while (pause_work == true)
+                while (pause_work == true && stopWork == false)
                 {
                     // Выбор пункта
                     std::getline(std::cin, select_point);
@@ -191,13 +224,7 @@ class Task
                 }
 
                 pause_work.exchange(false);
-
             }
-        }
-        void endTime()
-        {
-            stop_work = false;
-            cout << "Работа таймера приостановленна" << endl;
         }
 
         // Функция для добавления N дней к дате назначения заметки (на какой день она заплонированна)
@@ -209,8 +236,8 @@ class Task
         void printInfoTask()
         {
             cout << "👤\tИмя задачи: " << name_task << endl;
-            cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << year_task_YYYY << endl;
-            cout << "✅\tВы уже выполняете эту задачу: " << workMinutes << " минут " << workSeconds << " секунд " << endl;
+            cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << "/" << year_task_YYYY << endl;
+            cout << "✅\tВы уже выполняете эту задачу: " << totalWorkMinutes << " минут " << totalWorkSeconds << " секунд " << endl;
         }
 };
 
@@ -220,7 +247,5 @@ int main()
     std::string test {};
 
     test_task.startTime();
-    std::getline(std::cin, test);
-
     test_task.printInfoTask();
 }
