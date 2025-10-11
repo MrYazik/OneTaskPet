@@ -18,7 +18,7 @@ class Task
     private:
         std::string name_task; // имя задачи
         bool isDone {false}; // выполненна задача или нет
-        unsigned day_task, month_task, year_task_YYYY; // дата на какой день запланированная заметка
+        unsigned day_task {0}, month_task {0}, year_task_YYYY {0}; // дата на какой день запланированная заметка
 
         std::atomic<unsigned> totalWorkSeconds {};
         std::atomic<unsigned> totalWorkMinutes {};
@@ -241,7 +241,25 @@ class Task
             bool stop_current_input {false};
             std::string yesOrNo {""};
 
-            // Называние задачи
+            // меню месяцев
+            std::string point_select_month[12] {
+                "Январь",
+                "Февраль",
+                "Март",
+                "Апрель",
+                "Май",
+                "Июнь",
+                "Июль",
+                "Август",
+                "Сентябрь",
+                "Октябрь",
+                "Ноябрь",
+                "Декабрь"
+            };
+
+            Menu select_month {point_select_month, std::size(point_select_month)};
+
+            // Называем задачу
             while (stop_current_input == false)
             {
                 // Очищаем консоль
@@ -279,41 +297,54 @@ class Task
 
             stop_current_input = false;
 
+            // Задаём день
             while (stop_current_input == false)
             {
+                system("clear");
+
                 std::string dayMonth {};
                 cout << "Введите день месяца, в который вы хотите выполнить задачу (например, 01): ";
                 std::getline(std::cin, dayMonth);
 
-                // Проверка на правильность месяца
-                if (std::size(dayMonth) <= 2)
+                if (std::stoi(dayMonth) <= 31)
                 {
-                    if (dayMonth[0] <= 3)
-                    {
-                        if (dayMonth[1] >= 9)
-                        {
-                            // Проверка на числа типа 01..03..09
-                            if (dayMonth[0] == '0')
-                            {
-                                day_task = static_cast<int>(dayMonth[1]);
-                            } else
-                            {
-                                this -> day_task = std::stoi(dayMonth);
-                            }
-                        } else
-                        {
-                            cout << "Вы ввели неправильный день месяца" << endl;
-                        }
-                    } else
-                    {
-                        cout << "Вы ввели неправильный день месяца" << endl;
-                    }
+                    day_task = std::stoi(dayMonth);
+                    stop_current_input = true;
+                } else
+                {
+                    cout << "Вы ввели неправильный день месяца" << endl;
                 }
+            }
 
-                cout << "День месяца: " << day_task << endl;
-                cout << "Месяц: " << month_task << endl;
-                cout << "Год: " << year_task_YYYY << endl;
-    }       }
+            stop_current_input = false;
+            
+            // Задаём месяц
+            while (stop_current_input == false)
+            {
+                system("clear");
+                std::string select_month_input {""};
+
+                select_month.show();
+
+                cout << "Введите месяц в который вы хотите выполнить эту задачу: ";
+                std::getline(std::cin, select_month_input);
+            
+                if (std::stoi(select_month_input) > 0 && std::stoi(select_month_input) <= 12)
+                {
+                    month_task = std::stoi(select_month_input);
+                    stop_current_input = true;
+                } else
+                {
+                    cout << "Вы ввели неверный месяц" << endl;
+                }
+            }
+
+            stop_current_input = false;
+
+            cout << "Day: " << day_task << endl;
+            cout << "Month: " << month_task << endl;
+            cout << "Year: " << year_task_YYYY << endl;
+        }
 };
 
 int main()
