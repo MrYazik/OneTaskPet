@@ -16,7 +16,7 @@ using std::endl;
 	
 Menu::Menu(std::string points[], unsigned count_point)
 {
-	system("clear"); // очищаем консоль
+	// system("clear"); // очищаем консоль
 
 	// Заполняем все поля с пунктами
 	for (unsigned i {}; i < this -> count_point; i++)
