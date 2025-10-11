@@ -345,6 +345,7 @@ class Task
 
             stop_current_input = false;
 
+            // Выбор года
             while (stop_current_input == false)
             {
                 system("clear");
