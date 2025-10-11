@@ -259,6 +259,10 @@ class Task
 
             Menu select_month {point_select_month, std::size(point_select_month)};
 
+            // Формат даты
+            std::time_t current_time = std::time(nullptr);
+
+
             // Называем задачу
             while (stop_current_input == false)
             {
@@ -336,6 +340,24 @@ class Task
                 } else
                 {
                     cout << "Вы ввели неверный месяц" << endl;
+                }
+            }
+
+            stop_current_input = false;
+
+            while (stop_current_input == false)
+            {
+                system("clear");
+                std::string year_input;
+                std::tm* local_time = std::localtime(&current_time);
+
+                cout << "Введите год в который вы планируете выполнить эту задачу: ";
+                std::getline(std::cin, year_input);
+
+                if (std::stoi(year_input) >= local_time->tm_year + 1900)
+                {
+                    year_task_YYYY = std::stoi(year_input);
+                    stop_current_input = true;
                 }
             }
 
