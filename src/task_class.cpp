@@ -161,13 +161,9 @@ class Task
             return 0;
         }
     public:
-        Task(std::string name_task = "None name", unsigned day_task = 0, unsigned month_task = 12, unsigned year_task_YYYY = 0)
+        Task() 
         {
-            // присваиваиваем знаения полям
-            this -> name_task = name_task;
-            this -> day_task = day_task;
-            this -> month_task = month_task;
-            this -> year_task_YYYY = year_task_YYYY;
+
         }
 
         void startTime()
@@ -239,13 +235,91 @@ class Task
             cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << "/" << year_task_YYYY << endl;
             cout << "✅\tВы уже выполняете эту задачу: " << totalWorkMinutes << " минут " << totalWorkSeconds << " секунд " << endl;
         }
+
+        void installTasks()
+        {
+            bool stop_current_input {false};
+            std::string yesOrNo {""};
+
+            // Называние задачи
+            while (stop_current_input == false)
+            {
+                // Очищаем консоль
+                system("clear");
+
+                bool confirmName {false};
+
+                cout << "🖊️  Назовите задачу: ";
+                std::getline(std::cin, name_task);
+
+                system("clear");
+
+                cout << "👤  Название задачи: " << name_task << "\tПодвердить: (Y/n): ";
+                std::getline(std::cin, yesOrNo);
+
+                bool yes {
+                    yesOrNo == "Y" ||
+                    yesOrNo == "y" ||
+                    yesOrNo == "Д" ||
+                    yesOrNo == "д"
+                };
+
+                cout << endl;
+
+                if (yes)
+                {
+                    system("clear");
+
+                    cout << "👤 Ваше имя задачи: " <<
+                    name_task << endl;
+
+                    stop_current_input = true; // Завершаем выполнение текущего while
+                }
+            }
+
+            stop_current_input = false;
+
+            while (stop_current_input == false)
+            {
+                std::string dayMonth {};
+                cout << "Введите день месяца, в который вы хотите выполнить задачу (например, 01): ";
+                std::getline(std::cin, dayMonth);
+
+                // Проверка на правильность месяца
+                if (std::size(dayMonth) <= 2)
+                {
+                    if (dayMonth[0] <= 3)
+                    {
+                        if (dayMonth[1] >= 9)
+                        {
+                            // Проверка на числа типа 01..03..09
+                            if (dayMonth[0] == '0')
+                            {
+                                day_task = static_cast<int>(dayMonth[1]);
+                            } else
+                            {
+                                this -> day_task = std::stoi(dayMonth);
+                            }
+                        } else
+                        {
+                            cout << "Вы ввели неправильный день месяца" << endl;
+                        }
+                    } else
+                    {
+                        cout << "Вы ввели неправильный день месяца" << endl;
+                    }
+                }
+
+                cout << "День месяца: " << day_task << endl;
+                cout << "Месяц: " << month_task << endl;
+                cout << "Год: " << year_task_YYYY << endl;
+    }       }
 };
 
 int main()
 {
-    Task test_task("Тестовое", 1, 10, 2025);
+    Task test_task;
     std::string test {};
 
-    test_task.startTime();
-    test_task.printInfoTask();
+    test_task.installTasks();
 }
