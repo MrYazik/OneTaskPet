@@ -234,6 +234,7 @@ class Task
             cout << "👤\tИмя задачи: " << name_task << endl;
             cout << "🗓️\tЗапланированная дата, в которую вы хотите выполнить эту задачу: " << day_task << "/" << month_task << "/" << year_task_YYYY << endl;
             cout << "✅\tВы уже выполняете эту задачу: " << totalWorkMinutes << " минут " << totalWorkSeconds << " секунд " << endl;
+            cout << "📳\tОтдыхаете вы: " << totalPausedMinutes << " минут " << totalPausedSeconds << " секунд" << endl;
         }
 
         void installTasks()
