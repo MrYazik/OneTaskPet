@@ -1,13 +1,15 @@
 #include <iostream>
 #include <string>
 #include "headers/menu_class.h"
-
+#include <cstdlib>
 
 using std::cout;
 using std::endl;
 
 int main()
 {
+    system("clear"); // очищаем консоль
+
     std::string points_menu[] {
         "📅\tУстановка задач на текущий день", 
         "🗓️\tУстановка задач на последующие дни",
