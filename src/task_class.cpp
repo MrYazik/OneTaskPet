@@ -238,8 +238,10 @@ class Task
 
         void installTasks()
         {
-            bool stop_current_input {false};
-            std::string yesOrNo {""};
+            bool stop_current_input {false}; // Остановка текущего запроса
+            std::string yesOrNo {""}; // Ввод подверждения
+            bool error {false}; // Ошибка, например: неправильно введено имя задачи
+            std::string errorText {""}; // Текст, который ввёл пользователь и который вывел ошибку
 
             // меню месяцев
             std::string point_select_month[12] {
@@ -306,17 +308,33 @@ class Task
             {
                 system("clear");
 
+                // Проверка на ошибку в предыдущем цикле
+                if (error == true)
+                {
+                    cout << """\033[31mВы ввели неправильный день месяца\033[0m: """ << errorText << """\
+                        Введите день от 1 до 31""" << endl;
+                    error = false;
+                }
+
                 std::string dayMonth {};
                 cout << "Введите день месяца, в который вы хотите выполнить задачу (например, 01): ";
                 std::getline(std::cin, dayMonth);
 
-                if (std::stoi(dayMonth) <= 31)
+                try
                 {
-                    day_task = std::stoi(dayMonth);
-                    stop_current_input = true;
-                } else
+                    if (std::stoi(dayMonth) <= 31 && std::stoi(dayMonth) > 0)
+                    {
+                        day_task = std::stoi(dayMonth);
+                        stop_current_input = true;
+                    } else
+                    {
+                        error = true;
+                        errorText = dayMonth;
+                    }
+                } catch (...)
                 {
-                    cout << "Вы ввели неправильный день месяца" << endl;
+                    error = true;
+                    errorText = dayMonth;
                 }
             }
 
@@ -326,6 +344,14 @@ class Task
             while (stop_current_input == false)
             {
                 system("clear");
+
+                if (error == true)
+                {
+                    cout << "\033[31mВы ввели неправильный номер месяца: \033[0m  " << errorText << 
+                        "  Введите номер месяца от 1 до 12: " << endl;
+                    error = false;
+                }
+
                 std::string select_month_input {""};
 
                 select_month.show();
@@ -333,13 +359,21 @@ class Task
                 cout << "Введите месяц в который вы хотите выполнить эту задачу: ";
                 std::getline(std::cin, select_month_input);
             
-                if (std::stoi(select_month_input) > 0 && std::stoi(select_month_input) <= 12)
+                try 
                 {
-                    month_task = std::stoi(select_month_input);
-                    stop_current_input = true;
-                } else
+                    if (std::stoi(select_month_input) > 0 && std::stoi(select_month_input) <= 12)
+                    {
+                        month_task = std::stoi(select_month_input);
+                        stop_current_input = true;
+                    } else
+                    {
+                        error = true;
+                        errorText = select_month_input;
+                    }
+                } catch (...)
                 {
-                    cout << "Вы ввели неверный месяц" << endl;
+                    error = true;
+                    errorText = select_month_input;
                 }
             }
 
@@ -349,16 +383,34 @@ class Task
             while (stop_current_input == false)
             {
                 system("clear");
+
+                if (error == true)
+                {
+                    cout << """\033[31mВы ввели неправильный год\033[0m: """ << errorText << """\
+                        Введите день от 1 до 31""" << endl;
+                    error = false;
+                }
+
                 std::string year_input;
                 std::tm* local_time = std::localtime(&current_time);
 
                 cout << "Введите год в который вы планируете выполнить эту задачу: ";
                 std::getline(std::cin, year_input);
 
-                if (std::stoi(year_input) >= local_time->tm_year + 1900)
+                try {
+                    if (std::stoi(year_input) >= local_time->tm_year + 1900)
+                    {
+                        year_task_YYYY = std::stoi(year_input);
+                        stop_current_input = true;
+                    } else
+                    {
+                        error = true;
+                        errorText = year_input;
+                    }
+                } catch (...)
                 {
-                    year_task_YYYY = std::stoi(year_input);
-                    stop_current_input = true;
+                    error = true;
+                    errorText = year_input;
                 }
             }
 
