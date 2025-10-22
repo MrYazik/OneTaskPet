@@ -148,6 +148,7 @@ class Task
                 // Если пользователь завершил работу с отмеченным выполненным 
                 if (object -> isDone == true)
                 {
+
                     return 0;
                 }
 
@@ -416,11 +417,9 @@ class Task
             }
 
             stop_current_input = false;
-
-            cout << "Day: " << day_task << endl;
-            cout << "Month: " << month_task << endl;
-            cout << "Year: " << year_task_YYYY << endl;
         }
+
+        
 };
 
 int main()
