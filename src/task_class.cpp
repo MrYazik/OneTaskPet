@@ -23,9 +23,15 @@ class Task
 
         std::atomic<unsigned> totalWorkSeconds {};
         std::atomic<unsigned> totalWorkMinutes {};
+        std::atomic<unsigned> totalWorkHours {};
+        std::atomic<unsigned> totalWorkDays {};
+        std::atomic<unsigned> totalWorkMonth {};
 
         std::atomic<unsigned> workSeconds {};
         std::atomic<unsigned> workMinutes {};
+        std::atomic<unsigned> workHours {};
+        std::atomic<unsigned> workDays {};
+        std::atomic<unsigned> workMonth {};
 
         bool stopWorkNotDown {false};
         bool stopWork {false}; // Завершение выполнение функций класса
@@ -85,8 +91,8 @@ class Task
                 // Вывод информации о текущей сессии
                 system("clear");
                 cout << "Имя задачи: " << object->name_task << endl;
-                cout << "В текущей сессии вы работаете уже: " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
-                cout << "Сумарно вы работаете уже: " << object -> totalWorkMinutes << " минут " << object -> totalWorkSeconds << " секунд " << endl;
+                cout << "В текущей сессии вы работаете уже: " << object -> workMonth << " месяцев " << object -> workDays << " дней " << object -> workHours << " часов " << object -> workMinutes << " минут " << object -> workSeconds << " секунд " << endl;
+                cout << "Сумарно вы работаете уже: " << object -> totalWorkMonth << " месяцев " << object->totalWorkDays << " дней " << object->totalWorkHours << " часов " << object -> totalWorkMinutes << " минут " << object -> totalWorkSeconds << " секунд " << endl;
 
                 object->pause_and_stop_menu_timer.show();
 
@@ -113,7 +119,8 @@ class Task
                         // Локальное время на текущей сесии паузы
                         object -> pausedMinutes.fetch_add(1);
                         object -> pausedSeconds.exchange(0);
-                    } else
+                    }
+                    else
                     {
                         // Глобальное время паузы
                         object -> totalPausedSeconds.fetch_add(1);
@@ -138,10 +145,43 @@ class Task
 
                     object -> workMinutes.fetch_add(1);
                     object -> workSeconds.exchange(0);
+                } else if (object -> workMinutes >= 59)
+                {
+                    object -> totalWorkHours.fetch_add(1);
+                    object -> totalWorkHours.exchange(0);
+
+                    object -> workHours.fetch_add(1);
+                    object -> workMinutes.exchange(0);
+                } else if (object -> workHours >= 24)
+                {
+                    object -> workDays.fetch_add(1);
+                    object -> workHours.exchange(0);
+                } else if (object -> workDays >= 28)
+                {
+                    // Получение максимального количество дней в месяце
+
+                    std::time_t current_time = std::time(nullptr);
+                    std::tm* local_time = std::localtime(&current_time);
+
+                    int month = local_time->tm_mon;
+                    int year = local_time->tm_year;
+
+                    struct tm now = {0, 0, 0, 1, month, year - 1900, 0, 0, 0};
+                    struct tm next = { 0, 0, 0, 1, (month + 1) % 12, year + (month + 1) / 12 - 1900, 0, 0, 0 }; 
+
+                    if (object->workDays == (mktime(&next) - mktime(&now)) / (24*60*60))
+                    {
+                        object -> totalWorkMonth.fetch_add(1);
+                        object -> totalWorkDays.exchange(0);
+
+                        object -> workMonth.fetch_add(1);
+                        object -> workDays.exchange(0);
+
+
+                    }
                 } else
                 {
                     object -> totalWorkSeconds.fetch_add(1);
-
                     object -> workSeconds.fetch_add(1);
                 }
 
@@ -165,6 +205,14 @@ class Task
         Task() 
         {
 
+        }
+
+        Task(std::string name_task, unsigned day_task, unsigned month_task, unsigned year_task_YYYY)
+        {
+            this -> name_task = name_task;
+            this -> day_task = day_task;
+            this -> month_task = month_task;
+            this -> year_task_YYYY = year_task_YYYY;
         }
 
         void startTime()
@@ -424,15 +472,22 @@ class Task
             while (stop_current_input == false)
             {
                 try {
-                    std::ofstream task_file {"tasks.json", std::ios::app};
+                    std::ofstream task_file {"tasks.task", std::ios::app};
 
                     // Получение текущего времени
                     
 
+                    std::tm* local_time = std::localtime(&current_time);
+
                     task_file << "task: " << endl;
-                    task_file << "\t name: " << name_task << endl;
-                    task_file << "\t completed: " << isDone << endl;
-                    task_file << "\t date create: " << endl;
+                    task_file << "\tname: " << name_task << endl;
+                    task_file << "\tcompleted: " << isDone << endl;
+                    task_file << "\tdate create: " << local_time->tm_mday << "/" << local_time->tm_mon << "/" << local_time->tm_year + 1900 << endl;
+                    task_file << "\tdate-to-finished-task: " << day_task << "/" << month_task << "/" << year_task_YYYY << endl;
+                    task_file << "\ttotal-hours-work: " << totalWorkMinutes << endl;
+                    task_file << "\ttotal-minutes-work: " << totalWorkMinutes << endl;
+
+                    stop_current_input = true;
                 } catch (...)
                 {
                     std::string getExit {};
@@ -446,8 +501,7 @@ class Task
 
 int main()
 {
-    Task test_task;
-    std::string test {};
+    Task test_task {"Test", 18, 11, 2011};
 
-    test_task.installTasks();
+    test_task.startTime();
 }
