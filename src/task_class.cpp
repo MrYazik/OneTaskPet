@@ -63,11 +63,10 @@ class Task
         };
 
         // Меню для работающего таймера
-        std::string pause_and_stop_menu_point[4] {
+        std::string pause_and_stop_menu_point[3] {
             "\tПоставить на паузу выполнение",
             "\tВыйти из задачи и завершить задачу",
             "\tВыйти из задачи и не завершать задачу",
-            "\tРаботать в качестве таймера Pomodoro"
         };
         Menu pause_and_stop_menu_timer {pause_and_stop_menu_point, static_cast<unsigned>(std::size(pause_and_stop_menu_point))};
 
@@ -324,6 +323,8 @@ class Task
 
                 try
                 {
+                    std::tm* local_time = std::localtime(&current_time);
+
                     if (std::stoi(dayMonth) <= 31 && std::stoi(dayMonth) > 0)
                     {
                         day_task = std::stoi(dayMonth);
@@ -418,8 +419,6 @@ class Task
 
             stop_current_input = false;
         }
-
-        
 };
 
 int main()
@@ -428,4 +427,5 @@ int main()
     std::string test {};
 
     test_task.installTasks();
+    test_task.startTime();
 }
