@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <fstream>
 
 #include "../headers/menu_class.h"
 
@@ -418,6 +419,28 @@ class Task
             }
 
             stop_current_input = false;
+
+            // Добавление задачи в файл
+            while (stop_current_input == false)
+            {
+                try {
+                    std::ofstream task_file {"tasks.json", std::ios::app};
+
+                    // Получение текущего времени
+                    
+
+                    task_file << "task: " << endl;
+                    task_file << "\t name: " << name_task << endl;
+                    task_file << "\t completed: " << isDone << endl;
+                    task_file << "\t date create: " << endl;
+                } catch (...)
+                {
+                    std::string getExit {};
+
+                    cout << "Файл для работы с задачами открыт в какой-то другой программе, закройте его и нажмите любую клавишу и Enter" << endl;
+                    std::getline(std::cin, getExit);
+                }
+            }
         }
 };
 
@@ -427,5 +450,4 @@ int main()
     std::string test {};
 
     test_task.installTasks();
-    test_task.startTime();
 }
