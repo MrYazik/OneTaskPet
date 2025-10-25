@@ -467,16 +467,22 @@ class Task
             }
 
             stop_current_input = false;
+        }
 
-            // Добавление задачи в файл
-            while (stop_current_input == false)
+        void saveTaskInFile()
+        {
+            bool stop_save {false};
+
+            while (stop_save == false)
             {
-                try {
+
+                try  {
                     std::ofstream task_file {"tasks.task", std::ios::app};
 
                     // Получение текущего времени
                     
-
+                    // Формат даты
+                    std::time_t current_time = std::time(nullptr);
                     std::tm* local_time = std::localtime(&current_time);
 
                     task_file << "task: " << endl;
@@ -486,17 +492,21 @@ class Task
                     task_file << "\tdate-to-finished-task: " << day_task << "/" << month_task << "/" << year_task_YYYY << endl;
                     task_file << "\ttotal-hours-work: " << totalWorkMinutes << endl;
                     task_file << "\ttotal-minutes-work: " << totalWorkMinutes << endl;
+                    task_file << "end-task" << endl;
 
-                    stop_current_input = true;
-                } catch (...)
+                    task_file.close();
+                }
+                catch (...)
                 {
                     std::string getExit {};
 
                     cout << "Файл для работы с задачами открыт в какой-то другой программе, закройте его и нажмите любую клавишу и Enter" << endl;
                     std::getline(std::cin, getExit);
                 }
-            }
+            } 
         }
+
+
 };
 
 int main()
